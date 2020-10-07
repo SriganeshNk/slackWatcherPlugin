@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+  This plugin post to slack after any job configuration is changed. 
+</div>
