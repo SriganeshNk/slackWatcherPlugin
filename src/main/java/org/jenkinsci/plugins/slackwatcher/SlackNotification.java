@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.slackwatcher;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
@@ -19,16 +20,22 @@ public abstract class SlackNotification {
     private static final String PLUGIN = "job-config-change-slack-notifier-plugin: ";
 
     final private String message;
+    final private String color;
 
     final protected JobConfigSlackNotifier watcher;
 
     public SlackNotification(final Builder builder) {
         this.message = builder.message;
+        this.color = builder.color;
         this.watcher = builder.watcher;
     }
 
     protected String getMessage() {
         return message;
+    }
+
+    protected String getColor() {
+        return color;
     }
 
     public final void send(Job<?, ?> job) {
@@ -59,13 +66,19 @@ public abstract class SlackNotification {
         final protected JobConfigSlackNotifier watcher;
 
         private String message = "";
+        private String color = "warning";
 
         public Builder(final JobConfigSlackNotifier watcher) {
             this.watcher = watcher;
         }
 
-        public Builder message(final String subject) {
-            this.message = subject;
+        public Builder message(final String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder color(final String color) {
+            this.color = color;
             return this;
         }
 

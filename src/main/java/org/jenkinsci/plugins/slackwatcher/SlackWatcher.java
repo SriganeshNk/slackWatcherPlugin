@@ -97,7 +97,7 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job deleted, sending notifications");
 
         getNotification().message("deleted <" + item.getDisplayName() + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
-                .send(item);
+                .color("danger").send(item);
     }
 
     private Notification.Builder getNotification() {
@@ -116,6 +116,10 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
         @Override
         protected String getMessage() {
             return super.getMessage();
+        }
+
+        protected String getColor() {
+            return super.getColor();
         }
 
         private static class Builder extends SlackNotification.Builder {

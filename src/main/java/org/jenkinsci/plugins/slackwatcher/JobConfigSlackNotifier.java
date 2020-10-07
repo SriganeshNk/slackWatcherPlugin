@@ -106,10 +106,10 @@ public class JobConfigSlackNotifier {
 
         if (historyUrl != null) {
             postMessage = service.publish(message.toString(),
-                    String.format("Please check <%s|here> for the changes", historyUrl));
+                    String.format("Please check <%s|here> for the changes", historyUrl), notification.getColor());
         } else {
             postMessage = service.publish(message.toString(),
-                    "History not available, Please install/update jobConfigHistory plugin");
+                    "History not available, Please install/update jobConfigHistory plugin", notification.getColor());
         }
 
         LOGGER.log(Level.FINEST, "message published " + postMessage);
