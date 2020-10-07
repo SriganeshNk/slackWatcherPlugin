@@ -1,10 +1,8 @@
 package org.jenkinsci.plugins.slackwatcher;
 
-import hudson.ExtensionList;
-import hudson.model.Job;
-import hudson.plugins.jobConfigHistory.JobConfigHistory;
-import hudson.util.Secret;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.mail.MessagingException;
 
 import com.cloudbees.plugins.credentials.Credentials;
@@ -13,13 +11,17 @@ import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.Domain;
 
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+
+import hudson.ExtensionList;
+import hudson.model.Job;
+import hudson.plugins.jobConfigHistory.JobConfigHistory;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.plugins.slack.SlackNotifier;
 import jenkins.plugins.slack.SlackService;
 import jenkins.plugins.slack.StandardSlackService;
 import jenkins.plugins.slack.StandardSlackServiceBuilder;
-
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 /**
  * Send slack notification.
@@ -90,14 +92,27 @@ public class JobConfigSlackNotifier {
                         .withIconEmoji(sd.getIconEmoji()).withUsername(sd.getUsername()).withPopulatedToken(token)
                         .withNotifyCommitters(false).withSlackUserIdResolver(sd.getSlackUserIdResolver()));
 
-        LOGGER.info("Initialized Slack Standard Service, publishing messages now");
+        LOGGER.log(Level.FINEST, "Initialized Slack Standard Service, publishing messages now");
+
+        StringBuilder message = new StringBuilder();
+        boolean postMessage = false;
+
+        message.append("<@").append(Jenkins.getAuthentication().getName()).append("> ")
+                .append(notification.getMessage());
 
         ConfigHistory configHistory = new ConfigHistory((JobConfigHistory) jenkins.getPlugin("jobConfigHistory"));
 
-        boolean postMessage = service.publish("<@" + Jenkins.getAuthentication().getName() + "> "
-                + notification.getMessage() + "\n" + configHistory.lastChangeDiffUrl(job));
+        String historyUrl = configHistory.lastChangeDiffUrl(job);
 
-        LOGGER.info("message published " + postMessage);
+        if (historyUrl != null) {
+            postMessage = service.publish(message.toString(),
+                    String.format("Please check <%s|here> for the changes", historyUrl));
+        } else {
+            postMessage = service.publish(message.toString(),
+                    "History not available, Please install/update jobConfigHistory plugin");
+        }
+
+        LOGGER.log(Level.FINEST, "message published " + postMessage);
 
         return postMessage;
     }

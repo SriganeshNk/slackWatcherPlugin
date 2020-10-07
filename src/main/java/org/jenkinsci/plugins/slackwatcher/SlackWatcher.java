@@ -1,5 +1,14 @@
 package org.jenkinsci.plugins.slackwatcher;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.Nonnull;
+
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Describable;
@@ -9,15 +18,6 @@ import hudson.model.Job;
 import hudson.model.listeners.ItemListener;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nonnull;
-
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Notify whenever Job configuration changes.
@@ -65,7 +65,10 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
 
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job renamed, sending notifications");
 
-        getNotification().message("renamed from " + oldName + " to " + newName).send(item);
+        getNotification()
+                .message(
+                        "renamed from " + oldName + " to <" + newName + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
+                .send(item);
 
     }
 
@@ -79,7 +82,8 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
 
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job config updated, sending notifications");
 
-        getNotification().message("updated " + item.getDisplayName()).send(item);
+        getNotification().message("updated <" + item.getDisplayName() + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
+                .send(item);
     }
 
     @Override
@@ -92,7 +96,8 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
 
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job deleted, sending notifications");
 
-        getNotification().message("deleted " + item.getDisplayName()).send(item);
+        getNotification().message("deleted <" + item.getDisplayName() + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
+                .send(item);
     }
 
     private Notification.Builder getNotification() {

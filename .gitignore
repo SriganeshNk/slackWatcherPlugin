@@ -1,4 +1,7 @@
 target
 work
 .vscode
-
+.settings
+.classpath
+.factorypath
+.project

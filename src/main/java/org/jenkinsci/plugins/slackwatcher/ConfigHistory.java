@@ -38,7 +38,7 @@ public class ConfigHistory {
             return null;
         }
 
-        return String.format("%sjobConfigHistory/showDiffFiles?timestamp1=%s&timestamp2=%s", job.getAbsoluteUrl(),
+        return String.format("Please check <%sjobConfigHistory/showDiffFiles?timestamp1=%s&timestamp2=%s|here> for the changes", job.getAbsoluteUrl(),
                 configs.get(1).getDate(), configs.get(0).getDate());
     }
 
