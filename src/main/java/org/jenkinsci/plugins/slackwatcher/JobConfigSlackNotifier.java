@@ -15,7 +15,6 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import hudson.ExtensionList;
 import hudson.model.Job;
-import hudson.plugins.jobConfigHistory.JobConfigHistory;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.plugins.slack.SlackNotifier;
@@ -94,23 +93,10 @@ public class JobConfigSlackNotifier {
 
         LOGGER.log(Level.FINEST, "Initialized Slack Standard Service, publishing messages now");
 
-        StringBuilder message = new StringBuilder();
-        boolean postMessage = false;
+        LOGGER.info(notification.getMessage());
+        LOGGER.info(notification.getAttachments().toString());
 
-        message.append("<@").append(Jenkins.getAuthentication().getName()).append("> ")
-                .append(notification.getMessage());
-
-        ConfigHistory configHistory = new ConfigHistory((JobConfigHistory) jenkins.getPlugin("jobConfigHistory"));
-
-        String historyUrl = configHistory.lastChangeDiffUrl(job);
-
-        if (historyUrl != null) {
-            postMessage = service.publish(message.toString(),
-                    String.format("Please check <%s|here> for the changes", historyUrl), notification.getColor());
-        } else {
-            postMessage = service.publish(message.toString(),
-                    "History not available, Please install/update jobConfigHistory plugin", notification.getColor());
-        }
+        boolean postMessage = service.publish(notification.getMessage(), notification.getAttachments(), null);
 
         LOGGER.log(Level.FINEST, "message published " + postMessage);
 

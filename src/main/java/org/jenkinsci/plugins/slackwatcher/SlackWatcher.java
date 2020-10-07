@@ -16,7 +16,9 @@ import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.listeners.ItemListener;
+import hudson.plugins.jobConfigHistory.JobConfigHistory;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -55,6 +57,24 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
         return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(SlackWatcher.class);
     }
 
+    private JSONArray getAttachment(Job<?, ?> job, String color) {
+        ConfigHistory configHistory = new ConfigHistory((JobConfigHistory) Jenkins.get().getPlugin("jobConfigHistory"));
+
+        String historyUrl = configHistory.lastChangeDiffUrl(job);
+
+        JSONArray attachment = new JSONArray();
+
+        if (historyUrl != null) {
+            attachment.add(new JSONObject()
+                    .element("text", String.format("Please check <%s|here> for the changes", historyUrl))
+                    .element("color", color));
+        } else {
+            attachment.add(new JSONObject().element("text",
+                    "History not available, Please install/update jobConfigHistory plugin"));
+        }
+        return attachment;
+    }
+
     @Override
     public void onRenamed(Item item, String oldName, String newName) {
 
@@ -63,12 +83,14 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
             return;
         }
 
+        Job<?, ?> job = (Job<?, ?>) item;
+
+        String message = "<@" + Jenkins.getAuthentication().getName() + "> renamed from " + oldName + " to <"
+                + job.getAbsoluteUrl() + "|" + newName + ">";
+
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job renamed, sending notifications");
 
-        getNotification()
-                .message(
-                        "renamed from " + oldName + " to <" + newName + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
-                .send(item);
+        getNotification().message(message).attachments(getAttachment(job, "warning")).send(item);
 
     }
 
@@ -79,11 +101,14 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
             LOGGER.log(Level.FINEST, item.getDisplayName() + " Not a job config update");
             return;
         }
+        Job<?, ?> job = (Job<?, ?>) item;
+
+        String message = "<@" + Jenkins.getAuthentication().getName() + "> updated <" + job.getAbsoluteUrl() + "|"
+                + item.getDisplayName() + ">";
 
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job config updated, sending notifications");
 
-        getNotification().message("updated <" + item.getDisplayName() + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
-                .send(item);
+        getNotification().message(message).attachments(getAttachment(job, "warning")).send(item);
     }
 
     @Override
@@ -94,10 +119,15 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
             return;
         }
 
+        Job<?, ?> job = (Job<?, ?>) item;
+
+        String message = "<@" + Jenkins.getAuthentication().getName() + "deleted <" + job.getAbsoluteUrl() + "|"
+                + item.getDisplayName() + ">";
+
         LOGGER.log(Level.FINEST, item.getDisplayName() + " Job deleted, sending notifications");
 
-        getNotification().message("deleted <" + item.getDisplayName() + "|" + ((Job<?, ?>) item).getAbsoluteUrl() + ">")
-                .color("danger").send(item);
+        getNotification().message(message).attachments(getAttachment(job, "danger")).send(item);
+
     }
 
     private Notification.Builder getNotification() {
@@ -116,10 +146,6 @@ public class SlackWatcher extends ItemListener implements Describable<SlackWatch
         @Override
         protected String getMessage() {
             return super.getMessage();
-        }
-
-        protected String getColor() {
-            return super.getColor();
         }
 
         private static class Builder extends SlackNotification.Builder {

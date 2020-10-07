@@ -1,16 +1,16 @@
 package org.jenkinsci.plugins.slackwatcher;
 
-import hudson.model.Job;
-import hudson.plugins.jobConfigHistory.ConfigInfo;
-import hudson.plugins.jobConfigHistory.JobConfigHistory;
-import hudson.plugins.jobConfigHistory.JobConfigHistoryProjectAction;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import hudson.model.Job;
+import hudson.plugins.jobConfigHistory.ConfigInfo;
+import hudson.plugins.jobConfigHistory.JobConfigHistory;
+import hudson.plugins.jobConfigHistory.JobConfigHistoryProjectAction;
 
 /**
  * @author sriganesh
@@ -38,7 +38,7 @@ public class ConfigHistory {
             return null;
         }
 
-        return String.format("Please check <%sjobConfigHistory/showDiffFiles?timestamp1=%s&timestamp2=%s|here> for the changes", job.getAbsoluteUrl(),
+        return String.format("%sjobConfigHistory/showDiffFiles?timestamp1=%s&timestamp2=%s", job.getAbsoluteUrl(),
                 configs.get(1).getDate(), configs.get(0).getDate());
     }
 

@@ -7,6 +7,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
 import hudson.model.Job;
+import net.sf.json.JSONArray;
 
 /**
  * Slack notification for Jenkins.
@@ -20,13 +21,13 @@ public abstract class SlackNotification {
     private static final String PLUGIN = "job-config-change-slack-notifier-plugin: ";
 
     final private String message;
-    final private String color;
+    final private JSONArray attachments;
 
     final protected JobConfigSlackNotifier watcher;
 
     public SlackNotification(final Builder builder) {
         this.message = builder.message;
-        this.color = builder.color;
+        this.attachments = builder.attachments;
         this.watcher = builder.watcher;
     }
 
@@ -34,8 +35,8 @@ public abstract class SlackNotification {
         return message;
     }
 
-    protected String getColor() {
-        return color;
+    protected JSONArray getAttachments() {
+        return attachments;
     }
 
     public final void send(Job<?, ?> job) {
@@ -66,7 +67,7 @@ public abstract class SlackNotification {
         final protected JobConfigSlackNotifier watcher;
 
         private String message = "";
-        private String color = "warning";
+        private JSONArray attachments;
 
         public Builder(final JobConfigSlackNotifier watcher) {
             this.watcher = watcher;
@@ -77,8 +78,8 @@ public abstract class SlackNotification {
             return this;
         }
 
-        public Builder color(final String color) {
-            this.color = color;
+        public Builder attachments(final JSONArray attachments) {
+            this.attachments = attachments;
             return this;
         }
 
